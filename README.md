@@ -84,6 +84,8 @@ The system is architected to handle multiple environmental impact categories:
 │   ├── gateways/           # Gateway configurations
 │   │   └── main-gate.yaml
 │   └── shared_config.yaml  # Common configuration
+├── src/
+├   └──__init__.py
 ├── shutdown_sam.ps1        # Graceful shutdown script
 ├── .env                    # Environment variables (not in repo)
 ├── .env.example           # Environment template
@@ -153,17 +155,8 @@ curl -X POST "http://localhost:8000/api/v1/chat/send" \
 ### Key Improvements Made Post-Hackathon
 - Restructured agent communication patterns for better efficiency
 - Implemented proper error handling and graceful shutdowns
-- Added comprehensive environment variable management
 - Simplified the architecture by removing unnecessary complexity
-- Created reusable shutdown procedures
 - Enhanced security by removing hardcoded credentials
-
-### Agent Communication Flow
-```
-User Input → REST Gateway → OrchestratorAgent → TransportationAgent → ScoreAgent
-                                             ↓
-User Response ← REST Gateway ← OrchestratorAgent ← TransportationAgent ← ScoreAgent
-```
 
 ### Shutdown Management
 Use the provided PowerShell script for clean shutdowns:
@@ -187,15 +180,6 @@ Agents are configured via YAML files in the `configs/agents/` directory. Each ag
 - Timeout settings
 - Instruction prompts
 
-## Hackathon Legacy
-
-This project demonstrates the evolution from a rapid prototype developed during a time-constrained hackathon environment to a cleaned, production-ready multi-agent system. The original team collaboration focused on environmental awareness through technology, and this refined version showcases:
-
-- **Clean Architecture**: Well-organized agent separation of concerns
-- **Scalable Design**: Modular components that can be extended
-- **Production Practices**: Proper configuration management and security
-- **Documentation**: Comprehensive setup and usage instructions
-
 ## Future Enhancements
 
 The current implementation provides a foundation for expansion across multiple environmental categories:
@@ -216,10 +200,6 @@ The current implementation provides a foundation for expansion across multiple e
 - Mobile app integration for real-time data collection
 - Dashboard for tracking environmental impact over time
 - Integration with IoT devices for automatic data collection
-
-## License
-
-[Add your preferred license here]
 
 ## Contributors
 
