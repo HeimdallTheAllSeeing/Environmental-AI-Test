@@ -33,6 +33,7 @@ The system consists of three main agents working in coordination:
   - Provides numerical scores from -2 to +2 comparing user impact to regional averages
   - Compares user behavior against population averages in their geographic area
   - Applies standardized environmental impact scoring logic
+  - The numerical score is meant to be utilized to update an external graphic using the climate stripes as a visualization to the user about the impact of their actions
 
 ## Response Format
 
