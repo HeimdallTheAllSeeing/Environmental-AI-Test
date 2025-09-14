@@ -1,0 +1,69 @@
+# Solace Agent Mesh Agent Configuration
+
+log:
+  stdout_log_level: INFO
+  log_file_level: DEBUG
+  log_file: a2a_agent.log
+
+!include ../shared_config.yaml
+
+apps:
+  - name: "TransportationAgent__app"
+    app_base_path: .
+    app_module: solace_agent_mesh.agent.sac.app
+    broker:
+      <<: *broker_connection
+
+    app_config:
+      namespace: "${NAMESPACE}"
+      supports_streaming: true
+      agent_name: "TransportationAgent"
+      display_name: "Transportation Agent"
+      model: *general_model 
+
+      instruction: |
+        You browse the web to fetch information regading climat of the transportation methods mentioned in context while retriving average use data. You look for best transportation practices and provide them to the user.
+        You fetch the web for information about the transportation methods mentioned in context and provide the user with the best transportation practices.
+        Based on your findings, you will communicate with the score agent to get the score based on the user's transportation choices.
+        After you have the score, you will return the score to the user in a format following the system response format.
+
+      Restrictions : 
+        - Do not return files or graphs
+        - Always refer to the score agent to get a normalized score based on poppulation average (CA-US)
+      
+
+      session_service: *default_session_service
+      artifact_service: *default_artifact_service
+      
+      artifact_handling_mode: "reference"
+      enable_embed_resolution: true
+      enable_artifact_content_instruction: true
+      data_tools_config: *default_data_tools_config
+
+      # Agent Card Definition
+      agent_card:
+        description: |
+          A helpful agent responsible of transport related queries
+        defaultInputModes: [text] 
+        defaultOutputModes: [text] 
+        skills: 
+          - description: Browse the web to find the most up to date information and metrics
+              regarding climate impact of transportation methods
+            id: fetchTransportationInformation
+            name: Fetch Transportation Information
+          - description: Communicate with the score agent to get the score based on the user's transportation choices.
+            id: communicateWithScoreAgent
+            name: Communicate With Score Agent
+          - description: Return the score to the user in a format following the system response format.
+            id: returnScoreToUser
+            name: Return Score To User
+      
+      # Discovery & Communication
+      agent_card_publishing: 
+        interval_seconds: 10
+      agent_discovery: 
+        enabled: true
+      inter_agent_communication:
+        allow_list: [ScoreAgent] 
+        deny_list: [] 
+        request_timeout_seconds: 60

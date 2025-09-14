@@ -1,0 +1,102 @@
+# Plugin Metadata:
+# Name: sam-rest-gateway
+# Version: 0.1.0
+# Description: The Solace Agent Mesh (SAM) REST API Gateway provides a standard, robust, and secure HTTP-based entry point for programmatic and system-to-system integrations. It allows external clients to submit tasks to SAM agents, manage files, and discover agent capabilities using a familiar RESTful interface.
+# Author: SolaceLabs <solacelabs@solace.com>
+
+log:
+  stdout_log_level: INFO
+  log_file_level: DEBUG
+  log_file: main-gate.log
+
+# To use the `shared_config.yaml` file, uncomment the following line and remove the `shared_config` section below.
+# !include ../shared_config.yaml
+
+shared_config:
+  - broker_connection: &broker_connection
+      dev_mode: true  # Enable dev mode to simulate broker
+      broker_url: ${SOLACE_BROKER_URL, ws://localhost:8080}
+      broker_username: ${SOLACE_BROKER_USERNAME, default}
+      broker_password: ${SOLACE_BROKER_PASSWORD, default}
+      broker_vpn: ${SOLACE_BROKER_VPN, default}
+      temporary_queue: ${USE_TEMPORARY_QUEUES, true}
+
+  - services:
+    # Default artifact service configuration
+    artifact_service: &default_artifact_service
+      type: "filesystem"
+      base_path: "/tmp/samv2"
+      artifact_scope: namespace # Or "namespace", "app", "custom"
+
+#   - services:
+#     # Default artifact service configuration
+#     artifact_service: &default_artifact_service
+#       type: "filesystem"
+#       base_path: "/tmp/samv2"
+#       artifact_scope: namespace # Or "namespace", "app", "custom"
+
+apps:
+  # --- App Definition ---
+  - name: MainGate__app # Unique name for this gateway app instance
+    app_module: solace_agent_mesh.gateway.http_sse.app # Use standard WebUI app
+    broker:
+      <<: *broker_connection
+
+    app_config:
+      namespace: "${NAMESPACE}" 
+      gateway_id: main-gate-gw-01
+      session_secret_key: ${SESSION_SECRET_KEY, your-secret-key-here-change-in-production}
+      artifact_service: *default_artifact_service
+
+      authorization_service:
+        type: "none" # Or "default_rbac"
+
+      # --- WebUI Configuration ---
+      fastapi_host: ${FASTAPI_HOST, 0.0.0.0}
+      fastapi_port: ${FASTAPI_PORT, 8000}
+      
+      enable_embed_resolution: ${ENABLE_EMBED_RESOLUTION, true}
+      gateway_artifact_content_limit_bytes: ${GATEWAY_ARTIFACT_LIMIT_BYTES, 10000000}
+      sse_max_queue_size: ${SSE_MAX_QUEUE_SIZE, 200}
+      task_result_retention_seconds: 60  # Keep task results for 60 seconds
+      context_cleanup_delay_seconds: 45  # Delay context cleanup by 45 seconds
+      
+      cors_allowed_origins:
+        - "http://localhost:3000"
+        - "http://127.0.0.1:3000"
+        - "*"
+      
+      # --- Original REST Gateway Config (commented out) ---
+      # rest_api_server_host: ${REST_API_HOST, 0.0.0.0}
+      # rest_api_server_port: ${REST_API_PORT, 8081}
+      sync_mode_timeout_seconds: 300 # Timeout for the legacy v1 synchronous API - ENABLED for task retention
+      task_cleanup_delay_seconds: 30 # Keep tasks available for 30 seconds after completion
+      
+      # Enable API routes
+      # enable_api_routes: true
+      # api_prefix: "/v1"
+
+      # --- Authentication Configuration ---
+      enforce_authentication: false # Set to false to disable auth checks
+      external_auth_service_url: ${EXTERNAL_AUTH_SERVICE_URL, http://localhost:8081}
+
+      # --- Development User Identity (used when enforce_authentication is false) ---
+      default_user_identity: "sam_dev_user"
+
+      system_purpose: >
+            The system is a group of three agents that analyze the environmental impact of a user's actions.
+            The agents are:
+            - The Orchestrator Agent: This agent will receive the user's input and determine which agent to use to analyze the environmental impact of the user's actions.
+            - The Transportation Agent: This agent will analyze the environmental impact of the user's transportation choices.
+            - The Score Agent: This agent will analyze the environmental impact of the user's actions and provide a score.
+            The system will use the agents available to provide information,
+            reasoning and general assistance for the users in this system.
+
+      response_format: >
+            Response must be formatted following this template:
+            # Environmental Impact Analysis
+            **Impact Assessment:** [Positive/Negative]
+            **TABME Score:** [+2/-2]
+            ## Key Findings
+            - [Main impact analysis point]
+            - [Comparison to local averages]

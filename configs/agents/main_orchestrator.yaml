@@ -1,0 +1,81 @@
+# Solace Agent Mesh Orchestrator Agent Configurations
+
+log:
+  stdout_log_level: INFO
+  log_file_level: INFO
+  log_file: orchestrator-agent.log
+
+# Shared SAM config
+!include ../shared_config.yaml
+
+apps:
+  - name: orchestrator-agent_app
+    app_base_path: .
+    app_module: solace_agent_mesh.agent.sac.app
+    broker:
+      <<: *broker_connection
+
+    app_config:
+      namespace: ${NAMESPACE} 
+      supports_streaming: true
+      agent_name: "OrchestratorAgent"
+      display_name: "OrchestratorAgent"
+      model: *planning_model 
+
+      instruction: |
+        You are the Orchestrator Agent within an AI agentic system. Your primary responsibilities are to:
+        1. delegate the task to the appropriate agent based on the user's input.
+        2. receive the final analysis from the appropriate agent and return it to the user in the system response format for no more than 60 words.
+        **System Response Format:**
+        # Environmental Impact Analysis
+        **Impact Assessment:** [Positive/Negative]
+        **TABME Score:** [+2/-2]
+        ## Key Findings
+        - [Main impact analysis point]
+        - [Comparison to local averages]
+
+
+        Restrictions : 
+        - Do not return files or graphs
+        - Do not update the user's about your thinking process
+
+      response_format: >
+            Response must be formatted following this template:
+            # Environmental Impact Analysis
+            **Impact Assessment:** [Positive/Negative]
+            **TABME Score:** [+2/-2]
+            ## Key Findings
+            - [Main impact analysis point]
+            - [Comparison to local averages]
+
+      inject_system_purpose: true
+      inject_response_format: true
+      inject_user_profile: true
+      session_service: *default_session_service
+      artifact_service: *default_artifact_service
+      artifact_handling_mode: "reference" 
+      enable_embed_resolution: true 
+      enable_artifact_content_instruction: true 
+      data_tools_config: *default_data_tools_config
+      tools: 
+        - group_name: artifact_management
+          tool_type: builtin-group
+
+      agent_card:
+        description: "The Orchestrator component. It manages tasks and coordinates multi-agent workflows."
+        defaultInputModes: [text]
+        defaultOutputModes: [text]
+        skills: 
+          - id: "delegate_task"
+            name: "Delegate Task"
+            description: "Delegate the task to the appropriate agent based on the user's input."
+
+      agent_card_publishing: 
+        interval_seconds: 10
+      agent_discovery: 
+        enabled: true
+      inter_agent_communication:
+        allow_list: ["*"]
+        deny_list: ["ScoreAgent"]
+        
+        request_timeout_seconds: 600

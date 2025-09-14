@@ -1,0 +1,72 @@
+# Solace Agent Mesh Agent Configuration
+
+log:
+  stdout_log_level: INFO
+  log_file_level: DEBUG
+  log_file: a2a_agent.log
+
+!include ../shared_config.yaml
+
+apps:
+  - name: "ScoreAgent__app"
+    app_base_path: .
+    app_module: solace_agent_mesh.agent.sac.app
+    broker:
+      <<: *broker_connection
+
+    app_config:
+      namespace: "${NAMESPACE}"
+      supports_streaming: true
+      agent_name: "ScoreAgent"
+      display_name: "Score Agent Agent"
+      model: *general_model 
+
+      instruction: |
+        You are an agent depending on the transportation agent to provide the user's transportation choices and provide a score based on the user's transportation choices.
+        You will output just the score based on the user's transportation choices from -2 to +2 (best to worst)
+
+      Restrictions : 
+        - Do not return files or graphs
+        - Always return just the score
+      
+      tools: 
+
+      session_service: *default_session_service
+      artifact_service: *default_artifact_service
+      
+      artifact_handling_mode: "reference"
+      enable_embed_resolution: true
+      enable_artifact_content_instruction: true
+      data_tools_config: *default_data_tools_config
+
+      # Agent Card Definition
+      agent_card:
+        description: |
+          Agent responsible of creating a score from user behavior.
+        defaultInputModes: [text] 
+        defaultOutputModes: [text] 
+        skills: 
+          - description: 'Compare user behavior to average behavior''s impact on climate change
+              and gives a score with the following logic :
+          
+              -2 : Best/Perfect practice, 0 emission practice
+          
+              -1 : Below average emission practice
+          
+              0 : average practice
+          
+              +1 : Above average emission practice
+          
+              +2 : terrible emission practice'
+            id: CreateScore
+            name: Create A Score
+      
+      # Discovery & Communication
+      agent_card_publishing: 
+        interval_seconds: 10
+      agent_discovery: 
+        enabled: true
+      inter_agent_communication:
+        allow_list: [] 
+        deny_list: [] 
+        request_timeout_seconds: 600
