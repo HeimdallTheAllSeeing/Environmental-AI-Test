@@ -84,7 +84,6 @@ The system is architected to handle multiple environmental impact categories:
 │   ├── gateways/           # Gateway configurations
 │   │   └── main-gate.yaml
 │   └── shared_config.yaml  # Common configuration
-├── rebalance-app/          # Original hackathon codebase
 ├── shutdown_sam.ps1        # Graceful shutdown script
 ├── .env                    # Environment variables (not in repo)
 ├── .env.example           # Environment template
